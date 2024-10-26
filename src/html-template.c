@@ -8,8 +8,11 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-int replace_word(char* str, char* old_word, char* new_word) {
+int replace_word(char** pstr, const char* old_word, const char* new_word) {
     char *pos = NULL; 
+    assert(pstr != NULL);
+    char *str = *pstr;
+    size_t new_size = strlen(str) + 1;
     char *temp = malloc(strlen(str) + 1);
     if (temp == NULL) {
       fprintf(stderr, "Error allocating temp buffer for string: %s", str);
@@ -19,29 +22,40 @@ int replace_word(char* str, char* old_word, char* new_word) {
     printf("old = (%s), new = (%s)\n", old_word, new_word);
     int index = 0;
     int owlen = strlen(old_word);
+    int nwlen = strlen(new_word);
  
     // Repeat This loop until all occurrences are replaced.
  
     while ((pos = strstr(str, old_word)) != NULL) {
-        // Bakup current line
-        strcpy(temp, str);
- 
-        // Index of current found word
-        index = pos - str;
- 
-        // Terminate str after word found index
-        str[index] = '\0';
- 
-        // Concatenate str with new word
-        strcat(str, new_word);
- 
-        // Concatenate str with remaining words after
-        // oldword found index.
-        strcat(str, temp + index + owlen + 1);
-        puts("here");
+      // Bakup current line
+      strncpy(temp, str, strlen(str) + 1);
+
+      // Index of current found word
+      index = pos - str;
+
+      if (nwlen > owlen) {
+        new_size += (nwlen - owlen);
+        char *new_str = realloc(str, new_size);
+        if (new_str == NULL) {
+          free(temp);
+          fprintf(stderr, "Error reallocating memory for str.\n");
+          return -1;
+        }
+        str = new_str;
+        *pstr = str;
+      }
+
+      // Terminate str after word found index
+      str[index] = '\0';
+
+      // Concatenate str with new word
+      strncat(str, new_word, strlen(new_word) + 1);
+
+      // Concatenate str with remaining words after
+      strncat(str, temp + index + owlen, strlen(temp + index + owlen));
     }
 
-    temp != NULL ? free(temp) : 0;
+    free(temp);
     return 0;
 }
 
@@ -113,7 +127,7 @@ int execute_template(int output_location_fd, const char *template_name, struct t
       return -1;
     };
 
-   int rc = replace_word(template_buffer, key, value);
+   int rc = replace_word(&template_buffer, key, value);
    if (rc != 0) {
      fprintf(stderr, 
          "Error replacing key = (%s) with value = (%s) in template: %s",
@@ -132,5 +146,6 @@ int execute_template(int output_location_fd, const char *template_name, struct t
      return -1;
   }
 
+  free(template_buffer);
   return 0;
 };

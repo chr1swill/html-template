@@ -6,7 +6,7 @@ struct template_data {
   char *value;
 };
 
-int replace_word(char* str, char* old_word, char* new_word);
+int replace_word(char** pstr, const char* old_word, const char* new_word); 
 
 int execute_template(int output_location_fd, const char *template_name, struct template_data data[]);
 
