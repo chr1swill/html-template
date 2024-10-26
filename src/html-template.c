@@ -109,7 +109,7 @@ int execute_template(int output_location_fd, const char *template_name, struct t
     char *value = data[i].value;
     //printf("key = (%s), value = (%s)\n", key, value);
     
-    if ((key[0] == '{') && (key[1] == '{') &&
+    if (strlen(key) > 4 && (key[0] == '{') && (key[1] == '{') &&
         (key[strlen(key)] == '}') && (key[strlen(key) - 1] == '}')) {
       fprintf(stderr, "Error template syntax invalid, expected '{{key_name}}' but got; %s\n", key);
       close(template_fd);
