@@ -1,3 +1,4 @@
+#include "html-template.h"
 #include <stdio.h>
 #include <assert.h>
 #include <sys/stat.h>
@@ -6,11 +7,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
-
-struct template_data {
-  char *key;
-  char *value;
-};
 
 int replace_word(char* str, char* old_word, char* new_word) {
     char *pos = NULL; 
@@ -138,16 +134,3 @@ int execute_template(int output_location_fd, const char *template_name, struct t
 
   return 0;
 };
-
-int main() {
-  printf("TESTING: single sloted data\n");
-  int err = execute_template(STDOUT_FILENO, "test-input/multi-multi-slot.html", 
-      (struct template_data[]){ { "{{title}}", "fuck you tom" }, { "{{h1}}", "this is a website about someone names tom" }, { "{{p}}", "I DONT KNOW ANYONE NAMED TOM" }, { NULL, NULL }});
-  if (err != 0) {
-    printf("we fuck something up :(\n");
-    return -1;
-  }
-
-  printf("hey hey hey that shit apparently worded ;)\n");
-  return 0;
-}
