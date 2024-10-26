@@ -7,8 +7,6 @@
 #include <fcntl.h>
 #include <stdlib.h>
 
-#define TO_STR(x) #x
-
 struct template_data {
   char *key;
   char *value;
