@@ -92,6 +92,7 @@ int execute_template(int output_location_fd, const char *template_name, struct t
       return -1;
     }
 
+    close(template_fd);
     return 0;
   } 
 
