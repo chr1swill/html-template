@@ -22,7 +22,7 @@ int replace_word(char* str, char* old_word, char* new_word) {
       return -1;
     }
 
-    printf("old = (%s), new = (%s)", old_word, new_word);
+    printf("old = (%s), new = (%s)\n", old_word, new_word);
     int index = 0;
     int owlen = strlen(old_word);
  
@@ -34,7 +34,6 @@ int replace_word(char* str, char* old_word, char* new_word) {
  
         // Index of current found word
         index = pos - str;
-        puts("here");
  
         // Terminate str after word found index
         str[index] = '\0';
@@ -44,10 +43,11 @@ int replace_word(char* str, char* old_word, char* new_word) {
  
         // Concatenate str with remaining words after
         // oldword found index.
-        strcat(str, temp + index + owlen);
+        strcat(str, temp + index + owlen + 1);
+        puts("here");
     }
 
-    free(temp);
+    temp != NULL ? free(temp) : 0;
     return 0;
 }
 
@@ -142,8 +142,8 @@ int execute_template(int output_location_fd, const char *template_name, struct t
 
 int main() {
   printf("TESTING: single sloted data\n");
-  int err = execute_template(STDOUT_FILENO, "test-input/single-slot.html", 
-      (struct template_data[]){ { "{{title}}", "fuck you tom" }, { NULL, NULL }});
+  int err = execute_template(STDOUT_FILENO, "test-input/multi-multi-slot.html", 
+      (struct template_data[]){ { "{{title}}", "fuck you tom" }, { "{{h1}}", "this is a website about someone names tom" }, { "{{p}}", "I DONT KNOW ANYONE NAMED TOM" }, { NULL, NULL }});
   if (err != 0) {
     printf("we fuck something up :(\n");
     return -1;
