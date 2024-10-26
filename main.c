@@ -70,7 +70,7 @@ int execute_template(int output_location_fd, const char *template_name, struct t
     close(template_fd);
     return -1;
   } 
-  template_buffer[st.st_size + 1] = '\0';
+  template_buffer[st.st_size] = '\0';
 
   int bytes_read = read(template_fd, template_buffer, st.st_size);
   assert(bytes_read == st.st_size);
