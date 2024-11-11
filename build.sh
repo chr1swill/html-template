@@ -4,7 +4,7 @@ set -x -e
 
 OUTDIR=bin
 LIBNAME=libhtml-template.a
-FILENAME=main
+FILENAME=test
 
 DEBUG=1
 
@@ -27,9 +27,9 @@ gcc -c src/html-template.c -o "$OUTDIR/html-template.o" $CFLAGS
 
 ar rcs "$OUTDIR/$LIBNAME" "$OUTDIR/html-template.o"
 
-gcc -c example/main.c -o "$OUTDIR/main.o" $CFLAGS -I./src
+gcc -c example/${FILENAME}.c -o "$OUTDIR/${FILENAME}.o" $CFLAGS -I./src
 
-gcc "$OUTDIR/main.o" -L"$OUTDIR" -lhtml-template -o "$OUTDIR/$FILENAME" $LDFLAGS
+gcc "$OUTDIR/${FILENAME}.o" -L"$OUTDIR" -lhtml-template -o "$OUTDIR/$FILENAME" $LDFLAGS
 
 # create some white space after script
 echo ""
