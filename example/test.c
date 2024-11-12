@@ -39,7 +39,7 @@ int main() {
     {
       .test_title = "Multiple single data",
       .output_location_fd = STDOUT_FILENO,
-      .template_name = "example/no-slot.html",
+      .template_name = "example/multi-single-slot.html",
       .data = (struct template_data[]){
         {"{{title}}", "thank you tom"},
         {NULL, NULL}
@@ -49,7 +49,7 @@ int main() {
     {
       .test_title = "Multiple of each slots of data",
       .output_location_fd = STDOUT_FILENO,
-      .template_name = "example/no-slot.html",
+      .template_name = "example/multi-multi-slot.html",
       .data = (struct template_data[]){
         {"{{title}}", "thank you tom"},
         { "{{h1}}", "this is a website about someone names tom" },
@@ -65,6 +65,7 @@ int main() {
     int test_result =  test(&tda[i]);
     if (test_result != 0) {
       printf("FAILED TEST %s\n", tda[i].test_title);
+      return -1;
     } else {
       printf("PASSED TEST %s\n", tda[i].test_title);
     }

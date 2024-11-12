@@ -6,7 +6,7 @@ OUTDIR=bin
 LIBNAME=libhtml-template.a
 FILENAME=test
 
-DEBUG=1
+DEBUG=0
 
 CFLAGS="-Wall -Wextra"
 
