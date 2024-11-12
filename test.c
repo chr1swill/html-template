@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <string.h>
 #include <fcntl.h>
+#include <stdint.h>
 
 #define OUT STDOUT_FILENO
 
@@ -37,39 +38,59 @@ struct string_t file_to_buff(const char *filepath) {
     return string_from(n, buffer);
 }
 
-int main(void) {
-  int yes = 1;
+struct string_t chop_until_delim(struct string_t *string, const char delim) {
+  if (string->len < 0) {
+    return string_from(0, NULL);
+  };
 
-  int fd = open("__test.h", O_CREAT | O_RDWR);
-  assert(fd > 0);
+  size_t i = 0;
+  while (i < string->len && string->data[i] != delim) i++;
 
-  char *cursor; 
+  struct string_t line;
+  line.data = string->data;
+  line.len = i;
 
-  struct string_t string = file_to_buff("test.html");
-  char *result1 = strstr(string.data, "<%");
-  assert(result1);
-  int n  = &result1[0] - &string.data[0];
-  write(fd, string.data, n); 
-  printf("number:  %d\n", n);
+  if (i == string->len) {
+    string->data += string->len;
+    string->len = 0;
+  } else {
+    string->data += i + 1;
+    string->len -= i + 1;
+  }
 
-  cursor = &result1[n + 2];
-  write(fd, string.data, n - string.len); 
-  char *result2 = strstr(string.data, "%>");
-  write(fd, &string.data[n], &result2[0] - &cursor[0]); 
+  return line;
+}
 
-  close(fd);
+void compile_c_code(struct string_t s) {
+  printf("%.*s\n", (int) s.len, s.data);
+}
+
+void compile_byte_array(struct string_t s) {
+  printf("write(OUT, \"");
+  for (uint64_t i = 0; i < s.len; i++) {
+    printf("\\x%02x", s.data[i]);
+  }
+  printf("\", %lu);\n", s.len);
+}
+
+int main(int argc, char **argv) {
+  if (argc != 2) {
+    printf("Ussage: %s <template_filepath.>\n", argv[0]);
+    return -1;
+  }
+
+  struct string_t template = file_to_buff(argv[1]);
+
+  int c_code_mode = 0;
+  while (template.len) {
+    struct string_t token = chop_until_delim(&template, '%');
+    if (c_code_mode) {
+      compile_c_code(token);
+    } else {
+      compile_byte_array(token);
+    }
+    c_code_mode = !c_code_mode;
+  }
+
   return 0;
-
-  //printf("%s\n", result1);
-  //printf("%s\n", cursor);
-
-  assert(result2);
-  //cursor = &result2[0] + 2;
-  result2[0] = (char)0;
-  printf("%s\n", cursor);
-
-  //printf("%s\n", result2);
-  //printf("%s\n", cursor);
-  //write(OUT, string.data, string.len);
-  close(fd);
 }
