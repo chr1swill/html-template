@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #define OUT STDOUT_FILENO
@@ -73,6 +74,23 @@ void compile_byte_array(struct string_t s) {
 
 #define COMPILE_TEMPLATE(template_filepath)                                   \
   do {                                                                         \
+    int template_filepath_len = strlen((template_filepath)); \
+    assert(template_filepath_len < (256 - 2)); \
+    struct string_t *output_filepath = malloc(sizeof(struct string_t*)); \
+    assert(output_filepath != NULL); \
+    output_filepath->len = template_filepath_len + 2; \
+    printf("filepath len = %d, output filepath len = %d\n", template_filepath_len, (int)output_filepath->len);\
+    memmove(output_filepath->data, (template_filepath), template_filepath_len); \
+    output_filepath->data[template_filepath_len] = '.'; \
+    printf("no segfault yet\n");\
+    output_filepath->data[template_filepath_len + 1] = 'h'; \
+    assert(output_filepath->data[template_filepath_len - 1] != '\0');\
+    write(OUT, output_filepath->data, output_filepath->len); \
+    return 0; \
+\
+    int fd = open(output_filepath->data, O_CREAT | O_RDWR); \
+    assert(fd < 0); \
+    \
     struct string_t template = file_to_buff((template_filepath));              \
     int c_code_mode = 0;                                                       \
     while (template.len) {                                                     \
