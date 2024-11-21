@@ -79,6 +79,7 @@ void compile_byte_array(struct string_t s) {
     struct string_t *output_filepath = malloc(sizeof(struct string_t*)); \
     assert(output_filepath != NULL); \
     output_filepath->len = template_filepath_len + 2; \
+    output_filepath->data = malloc(sizeof(char) * output_filepath->len);\
     printf("filepath len = %d, output filepath len = %d\n", template_filepath_len, (int)output_filepath->len);\
     memmove(output_filepath->data, (template_filepath), template_filepath_len); \
     output_filepath->data[template_filepath_len] = '.'; \
@@ -86,6 +87,7 @@ void compile_byte_array(struct string_t s) {
     output_filepath->data[template_filepath_len + 1] = 'h'; \
     assert(output_filepath->data[template_filepath_len - 1] != '\0');\
     write(OUT, output_filepath->data, output_filepath->len); \
+    puts("");\
     return 0; \
 \
     int fd = open(output_filepath->data, O_CREAT | O_RDWR); \
