@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -72,59 +73,59 @@ void compile_byte_array(struct string_t s) {
   printf("\", %lu);\n", s.len);
 }
 
-#define COMPILE_TEMPLATE(template_filepath)                                   \
-  do {                                                                         \
-    int template_filepath_len = strlen((template_filepath)); \
-    assert(template_filepath_len < (256 - 2)); \
-    struct string_t *output_filepath = malloc(sizeof(struct string_t*)); \
-    assert(output_filepath != NULL); \
-    output_filepath->len = template_filepath_len + 2; \
-    output_filepath->data = malloc(sizeof(char) * output_filepath->len);\
-    printf("filepath len = %d, output filepath len = %d\n", template_filepath_len, (int)output_filepath->len);\
-    memmove(output_filepath->data, (template_filepath), template_filepath_len); \
-    output_filepath->data[template_filepath_len] = '.'; \
-    printf("no segfault yet\n");\
-    output_filepath->data[template_filepath_len + 1] = 'h'; \
-    assert(output_filepath->data[template_filepath_len - 1] != '\0');\
-    write(OUT, output_filepath->data, output_filepath->len); \
-    puts("");\
-    return 0; \
-\
-    int fd = open(output_filepath->data, O_CREAT | O_RDWR); \
-    assert(fd < 0); \
-    \
-    struct string_t template = file_to_buff((template_filepath));              \
-    int c_code_mode = 0;                                                       \
-    while (template.len) {                                                     \
-      struct string_t token = chop_until_delim(&template, '%');                \
-      if (c_code_mode) {                                                       \
-        compile_c_code(token);                                                 \
-      } else {                                                                 \
-        compile_byte_array(token);                                             \
-      }                                                                        \
-      c_code_mode = !c_code_mode;                                              \
-    }                                                                          \
-  } while (0);
+int compile_template(const char *template_filepath) {
+  int template_filepath_len = strlen((template_filepath));
+  assert(template_filepath_len < (256 - 2));
+  struct string_t output_filepath;/* = malloc(sizeof(struct string_t *));*/
+  //assert(output_filepath != NULL);
 
-int main(/**int argc, char **argv*/ void) {
-  // if (argc != 2) {
-  //   printf("Ussage: %s <template_filepath.>\n", argv[0]);
-  //   return -1;
-  // }
+  output_filepath.len = template_filepath_len + 2;
+  output_filepath.data = malloc(sizeof(char) * output_filepath.len);
+  if (output_filepath.data == NULL) {
+    fprintf(stderr, "Failed to allocate memory for template data\n");
+    return -1;
+  }
 
-  // struct string_t template = file_to_buff(argv[1]);
+  //printf("filepath len = %d, output filepath len = %d\n", template_filepath_len,
+  //       (int)output_filepath->len);
+  memmove(output_filepath.data, (template_filepath), template_filepath_len);
 
-  // int c_code_mode = 0;
-  // while (template.len) {
-  //   struct string_t token = chop_until_delim(&template, '%');
-  //   if (c_code_mode) {
-  //     compile_c_code(token);
-  //   } else {
-  //     compile_byte_array(token);
-  //   }
-  //   c_code_mode = !c_code_mode;
-  // }
+  output_filepath.data[template_filepath_len] = '.';
+  output_filepath.data[template_filepath_len + 1] = 'h';
+  assert(output_filepath.data[template_filepath_len - 1] != '\0');
 
-  COMPILE_TEMPLATE("test.html");
+  //printf("no segfault yet\n");
+  //write(OUT, output_filepath->data, output_filepath->len);
+  //puts("");
+  //printf("filename = (%s)\n", output_filepath->data);
+
+  int fd = open(output_filepath.data, O_CREAT | O_RDWR, S_IRWXU);
+  if (fd < 0) {
+    fprintf(stderr, "Error opening/creating file in read/write mode: %s\n",
+            strerror(errno));
+    return -1;
+  }
+
+  struct string_t template = file_to_buff((template_filepath));
+  int c_code_mode = 0;
+  while (template.len) {
+    struct string_t token = chop_until_delim(&template, '%');
+    if (c_code_mode) {
+      compile_c_code(token);
+    } else {
+      compile_byte_array(token);
+    }
+    c_code_mode = !c_code_mode;
+  }
+  return fd;
+}
+
+int main(void) {
+  int template_fd = compile_template("test.html");
+  if (template_fd < 0) {
+    fprintf(stderr, "Error compiling template\n");
+    return -1;
+  }
+
   return 0;
 }
