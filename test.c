@@ -74,10 +74,10 @@ void compile_byte_array(struct string_t s) {
 }
 
 int compile_template(const char *template_filepath) {
-  int template_filepath_len = strlen((template_filepath));
+  int template_filepath_len = strlen(template_filepath);
   assert(template_filepath_len < (256 - 2));
-  struct string_t output_filepath;/* = malloc(sizeof(struct string_t *));*/
-  //assert(output_filepath != NULL);
+
+  struct string_t output_filepath;
 
   output_filepath.len = template_filepath_len + 2;
   output_filepath.data = malloc(sizeof(char) * output_filepath.len);
@@ -86,23 +86,17 @@ int compile_template(const char *template_filepath) {
     return -1;
   }
 
-  //printf("filepath len = %d, output filepath len = %d\n", template_filepath_len,
-  //       (int)output_filepath->len);
   memmove(output_filepath.data, (template_filepath), template_filepath_len);
 
   output_filepath.data[template_filepath_len] = '.';
   output_filepath.data[template_filepath_len + 1] = 'h';
   assert(output_filepath.data[template_filepath_len - 1] != '\0');
 
-  //printf("no segfault yet\n");
-  //write(OUT, output_filepath->data, output_filepath->len);
-  //puts("");
-  //printf("filename = (%s)\n", output_filepath->data);
-
   int fd = open(output_filepath.data, O_CREAT | O_RDWR, S_IRWXU);
   if (fd < 0) {
     fprintf(stderr, "Error opening/creating file in read/write mode: %s\n",
             strerror(errno));
+    free(output_filepath.data);
     return -1;
   }
 
@@ -117,6 +111,8 @@ int compile_template(const char *template_filepath) {
     }
     c_code_mode = !c_code_mode;
   }
+
+  free(output_filepath.data);
   return fd;
 }
 
