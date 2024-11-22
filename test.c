@@ -73,30 +73,30 @@ void compile_byte_array(struct string_t s) {
   printf("\", %lu);\n", s.len);
 }
 
-int compile_template(const char *template_filepath) {
+int process_template(const char *template_filepath) {
   int template_filepath_len = strlen(template_filepath);
   assert(template_filepath_len < (256 - 2));
 
-  struct string_t output_filepath;
+  struct string_t template_output_filepath;
 
-  output_filepath.len = template_filepath_len + 2;
-  output_filepath.data = malloc(sizeof(char) * output_filepath.len);
-  if (output_filepath.data == NULL) {
+  template_output_filepath.len = template_filepath_len + 2;
+  template_output_filepath.data = malloc(sizeof(char) * template_output_filepath.len);
+  if (template_output_filepath.data == NULL) {
     fprintf(stderr, "Failed to allocate memory for template data\n");
     return -1;
   }
 
-  memmove(output_filepath.data, (template_filepath), template_filepath_len);
+  memmove(template_output_filepath.data, (template_filepath), template_filepath_len);
 
-  output_filepath.data[template_filepath_len] = '.';
-  output_filepath.data[template_filepath_len + 1] = 'h';
-  assert(output_filepath.data[template_filepath_len - 1] != '\0');
+  template_output_filepath.data[template_filepath_len] = '.';
+  template_output_filepath.data[template_filepath_len + 1] = 'h';
+  assert(template_output_filepath.data[template_filepath_len - 1] != '\0');
 
-  int fd = open(output_filepath.data, O_CREAT | O_RDWR, S_IRWXU);
+  int fd = open(template_output_filepath.data, O_CREAT | O_RDWR, S_IRWXU);
   if (fd < 0) {
     fprintf(stderr, "Error opening/creating file in read/write mode: %s\n",
             strerror(errno));
-    free(output_filepath.data);
+    free(template_output_filepath.data);
     return -1;
   }
 
@@ -112,12 +112,12 @@ int compile_template(const char *template_filepath) {
     c_code_mode = !c_code_mode;
   }
 
-  free(output_filepath.data);
+  free(template_output_filepath.data);
   return fd;
 }
 
 int main(void) {
-  int template_fd = compile_template("test.html");
+  int template_fd = process_template("test.html");
   if (template_fd < 0) {
     fprintf(stderr, "Error compiling template\n");
     return -1;
